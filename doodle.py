@@ -13,7 +13,7 @@ CHROMEDRIVER_PATH = '/Users/enricoeberhard/Documents/Dev/Python/webpy/bin/chrome
 WINDOW_SIZE = "1920,1080"
 
 chrome_options = Options()
-chrome_options.add_argument("--headless")
+#chrome_options.add_argument("--headless")
 chrome_options.add_argument("--window-size=%s" % WINDOW_SIZE)
 #chrome_options.binary_location = CHROME_PATH
 
@@ -84,10 +84,44 @@ def addDateTimes(browser, dates, times):
 	#wait to get to date/time selection page
 	#find field data-date="2017-11-17" matching Friday's date
 	
-	print("Adding dates and times")
+	#if month and year doesn't match date, press
+	
+	print("Adding dates...")
 	
 	for date in dates:
-		thisdate = WebDriverWait(browser, timeout=20).until(
+		
+		print(date)
+		
+		date_ = time.strptime(date,'%Y-%m-%d')
+		
+		#navigate to correct month and year on calendar!
+		#th id='d-currentMonth' has value "B Y" (<month name> <4digit year>)
+		#button class="d-button d-previousMonth d-silentButton"
+		#button class="d-button d-nextMonth d-silentButton"
+		while True:
+			monthObj = WebDriverWait(browser, timeout=10).until(
+				lambda x: x.find_element_by_xpath("//th[@id='d-currentMonth']"))
+				
+			page_ = time.strptime(monthObj.text, '%B %Y')
+			
+			#same year and month
+			if (page_.tm_mon == date_.tm_mon) and (page_.tm_year == date_.tm_year):
+				break
+	
+			#if next year, or if same year but upcoming month, press next
+			if (page_.tm_year < date_.tm_year) or \
+			((page_.tm_year == date_.tm_year) and (page_.tm_mon < date_.tm_mon)):
+				#next button
+				button = WebDriverWait(browser, timeout=10).until(
+					lambda x: x.find_element_by_xpath("//button[@class='d-button d-nextMonth d-silentButton']"))
+			else:
+				#previous button
+				button = WebDriverWait(browser, timeout=10).until(
+					lambda x: x.find_element_by_xpath("//button[@class='d-button d-previousMonth d-silentButton']"))
+			
+			button.click()
+		
+		thisdate = WebDriverWait(browser, timeout=10).until(
 			lambda x: x.find_element_by_xpath("//td[@data-date='" + date + "']"))
 		thisdate.click()
 
@@ -99,7 +133,12 @@ def addDateTimes(browser, dates, times):
 	timeInput = browser.find_element_by_xpath("//section[@id='d-wizardTimePickerView']//input[@id='d-timePickerInput']")
 	timeInputDone = browser.find_element_by_xpath("//section[@id='d-wizardTimePickerView']//button[@id='d-doneButton']")
 
+	print("Adding times...")
+
 	for t in range(0,len(times)):
+		
+		print("{s} - {e}".format(s=times[t][0], e=times[t][1]))
+		
 		if (t > 0): #click the add more times button
 			addMoreTimes = WebDriverWait(browser, timeout=10).until(
 				lambda x: x.find_element_by_xpath("//li[@class='d-addMoreTimesContainer']//button[1]"))
