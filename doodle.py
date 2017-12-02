@@ -87,7 +87,7 @@ def addDateTimes(browser, dates, times):
 	print("Adding dates and times")
 	
 	for date in dates:
-		thisdate = WebDriverWait(browser, timeout=60).until(
+		thisdate = WebDriverWait(browser, timeout=20).until(
 			lambda x: x.find_element_by_xpath("//td[@data-date='" + date + "']"))
 		thisdate.click()
 

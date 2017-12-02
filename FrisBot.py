@@ -16,6 +16,10 @@ import simplemail as email
 
 
 #some constants
+
+debug = False
+debugMail = 'eeberhard@rvc.ac.uk'
+
 today = time.strftime('%y-%m-%d') #in yy-mm-dd for BBC
 daysToFri = 5 - int(time.strftime('%w'))
 if daysToFri < 0:
@@ -88,7 +92,7 @@ def evaluateConditions(daysAhead, startTime, endTime):
 	if(avgWind > 12):
 		nogoList.append('high winds')
 	
-	if(avgTemp < 5):
+	if(avgTemp < 7):
 		nogoList.append('cold temperature')
 
 	if(avgTemp > 30):
@@ -155,6 +159,9 @@ def sendPollMail(poll):
 		'html':HTML
 	}
 	
+	if debug:
+		mail['to'] = [debugMail]
+
 	email.sendMail(mail,cred.mail)
 
 
@@ -317,8 +324,10 @@ def getAndSendPollResults(date):
 		'html':html
 	}
 	
-	email.sendMail(mail,cred.mail)
+	if debug:
+		mail['to'] = [debugMail]
 
+	email.sendMail(mail,cred.mail)
 
 
 if __name__ == '__main__':
@@ -334,6 +343,15 @@ if __name__ == '__main__':
 				getAndSendPollResults(nextFri)
 			else:
 				getAndSendPollResults(sys.argv[2])
+			exit()
+		elif task == 'test':
+			debug = True
+			if len(sys.argv) < 3:
+				print("Creating poll and sending test email")
+				makeAndSendFrisbeePoll()
+			else:
+				print("Confirming poll and sending test email")
+				getAndSendPollResults(nextFri)
 			exit()
 
 	print("""FrisBot help
