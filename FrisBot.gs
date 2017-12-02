@@ -32,7 +32,7 @@ function processMessage(message) {
 	Logger.log(email)
 
 	//get frisbee group
-	group = ContactsApp.getContactGroup('Frisbee')
+	group = ContactsApp.getContactGroup('Subscribers')
 	contact = ContactsApp.getContact(email)
 
 	//create contact
@@ -65,7 +65,9 @@ function processMessage(message) {
 
 function relayMessage(message) {
 	
-	group = ContactsApp.getContactGroup('Frisbee')
+	subject = message.match(/[^<]+(?=>)/g)[0]
+	
+	group = ContactsApp.getContactGroup('Subscribers')
 	
 	contacts = group.getContacts()
 	emails = []
@@ -82,7 +84,7 @@ function relayMessage(message) {
 	recipients = emails.join(", ")
 	Logger.log(recipients)
 	
-	GmailApp.sendEmail('eeberhard@rvc.ac.uk', message.getSubject(), message.getPlainBody(), {
+	GmailApp.sendEmail('eeberhard@rvc.ac.uk', subject, message.getPlainBody(), {
 	htmlBody: message.getBody(),
 	name: 'FrisBot'
 	});
