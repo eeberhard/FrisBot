@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
 import time
+import datetime
 import numpy as np
 import collections
 import doodle
@@ -16,15 +17,19 @@ import simplemail as email
 
 
 #some constants
-
-debug = False
 debugMail = 'eeberhard@rvc.ac.uk'
 
-today = time.strftime('%y-%m-%d') #in yy-mm-dd for BBC
-daysToFri = 5 - int(time.strftime('%w'))
-if daysToFri < 0:
-	daysToFri = daysToFri + 7
-nextFri = time.strftime('%Y-%m-') + str(int(time.strftime('%d'))+daysToFri) #in yyyy-mm-dd for doodle
+today_ = datetime.date.today()
+daysToFri = (4-today_.weekday()) % 7
+nextFri_ = today_ + datetime.timedelta(daysToFri)
+
+today = today_.strftime('%y-%m-%d') #in yy-mm-dd for BBC
+nextFri = nextFri_.strftime('%Y-%m-%d') #in yyyy-mm-dd for doodle
+
+
+#set with the "test" argument, stops emails to group
+debug = False
+
 
 #for list of times ex: ['09,'12',15'], find index closest to some supplied time eg: '08'
 def findClosestIndexedTime(time, times):
