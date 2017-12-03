@@ -35,7 +35,7 @@ debug = False
 def findClosestIndexedTime(time, times):
 	dists = [time - int(t) for t in times] #list of differences between listed times and given time
 	
-	timeInd = dists.index(int(np.sqrt(np.square(dists).min()))) #the index of the closest listed time to given time
+	timeInd = dists.index(int(np.sqrt(np.min(np.square(dists))))) #the index of the closest listed time to given time
 
 	return timeInd
 
@@ -139,23 +139,27 @@ def sendPollMail(poll):
 	
 	SUBJECT = "RELAY: <{title}>".format(title=poll['title'])
 	
-	TEXT = "{desc}\n\nDo the poll here:\n{link}\n\nFrisBot"
-	TEXT = TEXT.format(desc=poll['description'], link=poll['link'])
+	greet_text = "Hello frisbee players, \n\n"
+	greet_html = "<p>Hello frisbee players, </p>"
+	
+	TEXT = "{greet}{desc}\n\nDo the poll here:\n{link}\n\nFrisBot"
+	TEXT = TEXT.format(greet=greet_text, desc=poll['description'], link=poll['link'])
 	
 	HTML = """\
 		<html>
 		<head></head>
 		<body>
+		{greet}
 		<p>{desc}</p>
-		<p>Do the poll here: <b><a href="{link}">Doodle Poll</a></b>.</p>
+		<p><b><font size="+1"><a href="{link}">Do the Doodle Poll</a></b></font>.</p>
 		<p>FrisBot</p>
 		</body>
 		</html>
 		"""
-	HTML = HTML.format(desc=poll['description'], link=poll['link'])
+	HTML = HTML.format(greet=greet_html, desc=poll['description'], link=poll['link'])
 	
 	print("Sending following email:\n\n")
-	print(text)
+	print(TEXT)
 	
 	mail = {
 		'to':[cred.mail['email']], #send to self to be relayed to frisbee group
@@ -175,8 +179,7 @@ def sendPollMail(poll):
 
 def newFrisbeePoll():
 	
-	title = "Frisbee Friday {day} {month}".format(day=int(time.strftime('%d')) + daysToFri,
-												  month=time.strftime('%b')) #example: 17 Nov
+	title = "Frisbee Friday {0}".format(nextFri_.strftime('%d %b')) #example: 17 Nov
 		
 	check = evaluateConditions(daysToFri,'09','15')
 
@@ -203,7 +206,7 @@ def newFrisbeePoll():
 def makeAndSendFrisbeePoll():
 	#make sure Friday isn't too far away (more than x days)
 	if daysToFri > 3:
-		print("Friday too far away for reliable forecasting ({} days)".format(daysToFri))
+		print("Friday is too far away for reliable forecasting ({} days)".format(daysToFri))
 		exit()
 	
 	#check if this script has run already this week
