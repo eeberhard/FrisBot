@@ -185,7 +185,7 @@ def newDoodlePoll(title,description,dates,times):
 	with closing(DRIVER(**driver_options)) as browser:
 
 		#set default timeout time to find page elements
-		driver.implicitly_wait(TIMEOUT)
+		browser.implicitly_wait(TIMEOUT)
 		
 		loginToDoodle(browser)
 
@@ -210,7 +210,7 @@ def chooseTime(poll):
 	
 	with closing(DRIVER(**driver_options)) as browser:
 		
-		driver.implicitly_wait(TIMEOUT)
+		browser.implicitly_wait(TIMEOUT)
 		
 		browser.get(poll)
 		
