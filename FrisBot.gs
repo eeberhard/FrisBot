@@ -15,57 +15,84 @@ function main() {
 function processMessage(message) {
 	
 	subject = message.getSubject().toLowerCase()
-	Logger.log(subject)
-
+	Logger.log("Processing unread email with subject: " + message.getSubject())
+	console.info("Processing unread email with subject: " + message.getSubject())
+	
 	if(subject.indexOf('relay: ') != -1) {
 		relayMessage(message)
+		message.markRead()
+		return 0
+	}
+	
+	
+	sender = message.getFrom()
+	if(sender == null) {
+		message.markRead()
+		return 0
 	}
 
-
-	sender = message.getFrom()
-	email = sender.match(/[^<]+(?=>)/g)[0]
-
+	
+	email = sender.match(/[^<]+(?=>)/g)
+	
 	if(email == null)
 		email = sender
+	else
+		email = email[0]
 
-	Logger.log(sender)
-	Logger.log(email)
-
+  
+	Logger.log("Email received from address: " + email)
+	console.info("Email received from address: " + email)
+		
 	//get frisbee group
 	group = ContactsApp.getContactGroup('Subscribers')
 	contact = ContactsApp.getContact(email)
 
 	//create contact
 	if(contact == null) {
-		last = sender.match(/[^"]+(?=,)/g)[0]
-		first = sender.match(/[^ ]+(?=")/g)[0]
-		Logger.log(first)
-		Logger.log(last)
-		contact = ContactsApp.createContact(first, last, email)
+		last = sender.match(/[^"]+(?=,)/g)
+		first = sender.match(/[^ ]+(?=")/g)
+		if((first!=null) && (last!=null)) {
+			contact = ContactsApp.createContact(first[0], last[0], email)
+			Logger.log("New contact: " + first[0] + " " + last[0] + " (" + email + ")")
+			console.info("New contact: " + first[0] + " " + last[0] + " (" + email + ")")
+			
+		}
+		else {
+			contact = ContactsApp.createContact('', '', email)
+			Logger.log("New contact: " + email)
+			console.info("New contact: " + email)
+		}
+	}
+	else {
+		Logger.log("Existing contact found: " + contact.getFullName() + ", " + contact.getEmails()[0].getAddress())
+		console.info("Existing contact found: " + contact.getFullName() + ", " + contact.getEmails()[0].getAddress())
 	}
 	
-	Logger.log(contact)
 	
 	if(subject.indexOf('unsubscribe') != -1) {
 		contact.removeFromGroup(group)
 		message.reply("You have been removed from the FrisBot mailing list. To re-subscribe at any time, send me an email with " +
 					  "\"subscribe\" in the subject line.\n\nFrisBot")
+		Logger.log("Removed " + contact.getFullName() + " (" + email + ") from the Subscribers list")
+		console.info("Removed " + contact.getFullName() + " (" + email + ") from the Subscribers list")
 	}
 	else if(subject.indexOf('subscribe') != -1) {
 		contact.addToGroup(group)
 		message.reply("Thank you! You have been added to the FrisBot mailing list. To unsubscribe at any time, send me an email with " +
 					  "\"unsubscribe\" in the subject line.\n\nFrisBot")
+		Logger.log("Added " + contact.getFullName() + " (" + email + ") to the Subscribers list")
+		console.info("Added " + contact.getFullName() + " (" + email + ") to the Subscribers list")
 	}
 	
 	
 	message.markRead()
-
+	
 }
 
 
 function relayMessage(message) {
 	
-	subject = message.match(/[^<]+(?=>)/g)[0]
+	subject = message.getSubject().match(/[^<]+(?=>)/g)[0]
 	
 	group = ContactsApp.getContactGroup('Subscribers')
 	
@@ -79,14 +106,24 @@ function relayMessage(message) {
 		}
 	}
 	
-	Logger.log(emails)
 	
 	recipients = emails.join(", ")
-	Logger.log(recipients)
 	
-	GmailApp.sendEmail('eeberhard@rvc.ac.uk', subject, message.getPlainBody(), {
-	htmlBody: message.getBody(),
-	name: 'FrisBot'
+	Logger.log("Relaying email to group: " + recipients)
+	
+	mail = {
+		recipients: recipients,
+		subject: subject,
+		text: message.getPlainBody(),
+		html: message.getBody()
+	};
+	
+	console.log({message: 'Relaying email to group', mailData: mail});
+	
+	GmailApp.sendEmail(recipients, subject, message.getPlainBody(), {
+		htmlBody: message.getBody(),
+		name: 'FrisBot'
 	});
 	
 }
+	
