@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import re
 import sys
 import time
 import datetime
@@ -17,6 +18,8 @@ import simplemail as email
 
 
 #some constants
+logfile = "FrisBotLog.txt"
+
 debugMail = 'eeberhard@rvc.ac.uk'
 
 today_ = datetime.date.today()
@@ -175,29 +178,25 @@ def sendPollMail(poll):
 
 
 
+def generatePollDetails():
 
-
-def newFrisbeePoll():
-	
 	title = "Frisbee Friday {0}".format(nextFri_.strftime('%d %b')) #example: 17 Nov
-		
+	
 	check = evaluateConditions(daysToFri,'09','15')
-
+	
 	description = check['description']
-
+	
 	dates = [nextFri]
 	times = check['times']
-
+	
 	print("----- Making poll with following title, description, dates and times:\n")
 	print(title)
 	print(description)
 	print(dates)
 	print(times)
 	print("\n")
-
+	
 	poll = {'title':title, 'description':description, 'dates':dates, 'times':times}
-
-	poll['link'] = doodle.newDoodlePoll(**poll)
 
 	return poll
 
@@ -210,51 +209,70 @@ def makeAndSendFrisbeePoll():
 		exit()
 	
 	#check if this script has run already this week
-	filename = "FrisBotLog.txt"
-	with open(filename, 'r') as fp:
-		lines = [line.rstrip('\n') for line in fp]
+	with open(logfile, 'r') as fp:
+		nextFriLines = [line for line in fp if nextFri in line]
 		fp.close()
-	
-	for line in lines:
-		if nextFri in line:
-			print("Script already executed for this week:")
-			print(line)
-			exit()
 
-	#create a new poll
-	poll = newFrisbeePoll()
+	poll_link = False
+
+	for line in nextFriLines:
+		if 'poll_mail_sent' in line:
+			print("Poll mail already sent out for {}".format(nextFri))
+			return
+		
+		result = re.search('(http.*?poll\/[\w\d]+)',line)
+		if result:
+			poll_link = result.group(1)
+
+	poll = generatePollDetails()
 	
+	if not poll_link:
+		#create a new poll
+		poll['link'] = doodle.newDoodlePoll(**poll)
+		#log poll creation
+		with open(logfile, 'a') as fp:
+			fp.write("{d}\t{l}\n".format(d=nextFri, l=poll['link']))
+			fp.close()
+	else:
+		poll['link'] = poll_link
+
 	#send email
 	sendPollMail(poll)
-	
-	#log the date and link of the poll
-	with open(filename, 'r+') as fp:
-		print(nextFri + "\t" + poll['link'], file=fp)
+	#log the sending of the mail
+	with open(logfile, 'a') as fp:
+		fp.write("{d}\tpoll_mail_sent\n".format(d=nextFri))
 		fp.close()
-
 
 
 
 def getAndSendPollResults(date):
 
 	#get the log line matching the date
-	filename = "FrisBotLog.txt"
-	with open(filename, 'r') as fp:
-		lines = [line.rstrip('\n') for line in fp]
+	#check if this script has run already this week
+	with open(logfile, 'r') as fp:
+		nextFriLines = [line for line in fp if date in line]
 		fp.close()
 	
-	link = ''
-	for line in lines:
-		if date in line:
-			link = line.split()[1]
+	poll_link = False
 
-	if len(link) == 0:
+	for line in nextFriLines:
+	
+		if 'conf_mail_sent' in line:
+			print("Confirmation mail already sent out for {}".format(date))
+			return
+		result = re.search('(http.*?poll\/[\w\d]+)',line)
+		if result:
+			poll_link = result.group(1)
+
+
+	
+	if not poll_link:
 		print("No log line found with date {}".format(date))
 		return
 
-	print("Logged doodle poll for date {d}: {l}".format(d=date, l=link))
+	print("Logged doodle poll for date {d}: {l}".format(d=date, l=poll_link))
 
-	result = doodle.chooseTime(link)
+	result = doodle.chooseTime(poll_link)
 
 	date_struct = time.strptime(date,'%Y-%m-%d')
 
@@ -271,8 +289,8 @@ def getAndSendPollResults(date):
 		
 		line = "There are enough numbers for a game, with {v} votes for {t}".format(
 			v=result['topvotes'], t=result['toptime'])
-		html = html + "<p>" + line + " (<a href=\"{l}\">doodle poll</a>).</p>".format(l=link)
-		text = text + line + " ({l}).\n\n".format(l=link)
+		html = html + "<p>" + line + " (<a href=\"{l}\">doodle poll</a>).</p>".format(l=poll_link)
+		text = text + line + " ({l}).\n\n".format(l=poll_link)
 
 
 		#get forecast for top time
@@ -315,8 +333,8 @@ def getAndSendPollResults(date):
 	else:
 		line = "There are not enough numbers for a full game, with only {v} vote{s} for {t}".format(
 				v=result['topvotes'], t=result['toptime'], s=('' if result['topvotes']==1 else 's'))
-		html = html + "<p>" + line + " (<a href=\"{l}\">doodle poll</a>).</p>".format(l=link)
-		text = text + line + " ({l}).\n\n".format(l=link)
+		html = html + "<p>" + line + " (<a href=\"{l}\">doodle poll</a>).</p>".format(l=poll_link)
+		text = text + line + " ({l}).\n\n".format(l=poll_link)
 
 
 	html = html + "<p>FrisBot</p></body></html>"
@@ -336,6 +354,9 @@ def getAndSendPollResults(date):
 		mail['to'] = [debugMail]
 
 	email.sendMail(mail,cred.mail)
+	with open(logfile, 'a') as fp:
+		fp.write("{d}\tconf_mail_sent\n".format(d=date))
+		fp.close()
 
 
 if __name__ == '__main__':
