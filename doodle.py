@@ -3,21 +3,24 @@ from sys import platform
 import numpy as np
 from contextlib import closing
 from selenium.webdriver import PhantomJS
-from selenium.webdriver import Chrome # pip install selenium
+from selenium.webdriver import Chrome
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 import credentials as cred
 
-
-driver_options = Options()
+driver_options = {}
 
 if platform == "linux":
 	DRIVER = PhantomJS
+	#driver_options['executable_path'] = '/usr/bin'
 	TIMEOUT = 240
 else:
-	DRIVER = CHROME
-	driver_options.add_argument("--headless")
-	driver_options.add_argument("--window-size=1080,720")
+	DRIVER = Chrome
+	chrome_options = ChromeOptions()
+	chrome_options.add_argument("--headless")
+	chrome_options.add_argument("--window-size=1080,720")
+	#driver_options['executable_path'] = '/usr/bin'
+	driver_options['chrome_options'] = chrome_options
 	TIMEOUT = 10
 
 def loginToDoodle(browser):
@@ -194,7 +197,7 @@ def newDoodlePoll(title,description,dates,times):
 
 	# use chrome to get page with javascript generated content
 #	with closing(Chrome(executable_path=CHROMEDRIVER_PATH,chrome_options=chrome_options)) as browser:
-	with closing(DRIVER()) as browser:
+	with closing(DRIVER(**driver_options)) as browser:
 
 		loginToDoodle(browser)
 
@@ -217,7 +220,7 @@ def chooseTime(poll):
 	# - div class="d-optionDate" with d-month, d-day, d-date class divs
 	# - div class="d-optionDetails" with div class="d-time", and way down a div class="d-text" with the count
 	
-	with closing(DRIVER()) as browser:
+	with closing(DRIVER(**driver_options)) as browser:
 		
 		browser.get(poll)
 		
