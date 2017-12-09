@@ -4,7 +4,6 @@ import numpy as np
 from contextlib import closing
 from selenium.webdriver import PhantomJS
 from selenium.webdriver import Chrome
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 import credentials as cred
 
@@ -31,8 +30,7 @@ def loginToDoodle(browser):
 	browser.get(doodle)
 	
 	# wait for the page to load until we find login form
-	element = WebDriverWait(browser, timeout=TIMEOUT).until(
-		lambda x: x.find_element_by_id('d-email'))
+	element = browser.find_element_by_id('d-email'))
 
 	#fill email field
 	element.clear()
@@ -54,8 +52,7 @@ def loginToDoodle(browser):
 def startNewPoll(browser, title, description):
 	
 	# wait for the login to go through
-	element = WebDriverWait(browser, timeout=TIMEOUT).until(
-		lambda x: x.find_element_by_id('d-pollCreationShortcutTitle'))
+	element = browser.find_element_by_id('d-pollCreationShortcutTitle'))
 		
 	print("Creating new poll")
 
@@ -69,8 +66,7 @@ def startNewPoll(browser, title, description):
 
 
 	#wait to get to poll detail page
-	element = WebDriverWait(browser, timeout=TIMEOUT).until(
-		lambda x: x.find_element_by_id('d-pollDescription'))
+	element = browser.find_element_by_id('d-pollDescription'))
 
 	#title is already filled in, so now enter description and hit next
 	element.clear()
@@ -102,8 +98,7 @@ def addDateTimes(browser, dates, times):
 		#button class="d-button d-previousMonth d-silentButton"
 		#button class="d-button d-nextMonth d-silentButton"
 		while True:
-			monthObj = WebDriverWait(browser, timeout=TIMEOUT).until(
-				lambda x: x.find_element_by_xpath("//th[@id='d-currentMonth']"))
+			monthObj = browser.find_element_by_xpath("//th[@id='d-currentMonth']"))
 				
 			page_ = time.strptime(monthObj.text, '%B %Y')
 			
@@ -115,17 +110,14 @@ def addDateTimes(browser, dates, times):
 			if (page_.tm_year < date_.tm_year) or \
 			((page_.tm_year == date_.tm_year) and (page_.tm_mon < date_.tm_mon)):
 				#next button
-				button = WebDriverWait(browser, timeout=TIMEOUT).until(
-					lambda x: x.find_element_by_xpath("//button[@class='d-button d-nextMonth d-silentButton']"))
+				button = browser: x.find_element_by_xpath("//button[@class='d-button d-nextMonth d-silentButton']"))
 			else:
 				#previous button
-				button = WebDriverWait(browser, timeout=TIMEOUT).until(
-					lambda x: x.find_element_by_xpath("//button[@class='d-button d-previousMonth d-silentButton']"))
+				button =browser: x.find_element_by_xpath("//button[@class='d-button d-previousMonth d-silentButton']"))
 			
 			button.click()
 		
-		thisdate = WebDriverWait(browser, timeout=TIMEOUT).until(
-			lambda x: x.find_element_by_xpath("//td[@data-date='" + date + "']"))
+		thisdate = browser.find_element_by_xpath("//td[@data-date='" + date + "']"))
 		thisdate.click()
 
 	#click the "add times" button (assumption is new poll with no times entered)
@@ -143,20 +135,17 @@ def addDateTimes(browser, dates, times):
 		print("{s} - {e}".format(s=times[t][0], e=times[t][1]))
 		
 		if (t > 0): #click the add more times button
-			addMoreTimes = WebDriverWait(browser, timeout=TIMEOUT).until(
-				lambda x: x.find_element_by_xpath("//li[@class='d-addMoreTimesContainer']//button[1]"))
+			addMoreTimes = browser.find_element_by_xpath("//li[@class='d-addMoreTimesContainer']//button[1]"))
 			addMoreTimes.click()
 
-		timeStart = WebDriverWait(browser, timeout=TIMEOUT).until(
-			lambda x: x.find_element_by_xpath("//div[@class='d-datetimePickerOptions']//li["+str(t+1)+"]/div[1]/div[1]//input[1]"))
+		timeStart = browser.find_element_by_xpath("//div[@class='d-datetimePickerOptions']//li["+str(t+1)+"]/div[1]/div[1]//input[1]"))
 		timeStart.click()
 		time.sleep(0.2)
 		timeInput.clear()
 		timeInput.send_keys(times[t][0])
 		timeInputDone.click()
 
-		timeEnd = WebDriverWait(browser, timeout=TIMEOUT).until(
-			lambda x: x.find_element_by_xpath("//div[@class='d-datetimePickerOptions']//li["+str(t+1)+"]/div[1]/div[2]//input[1]"))
+		timeEnd = browser.find_element_by_xpath("//div[@class='d-datetimePickerOptions']//li["+str(t+1)+"]/div[1]/div[2]//input[1]"))
 		timeEnd.click()
 		time.sleep(0.2)
 		timeInput.clear()
@@ -178,13 +167,11 @@ def confirmPoll(browser):
 	print("Confirming poll")
 	
 	#click to confirm the poll
-	finish = WebDriverWait(browser, timeout=TIMEOUT).until(
-		lambda x: x.find_element_by_id('d-persistPollButton'))
+	finish = browser.find_element_by_id('d-persistPollButton'))
 
 	finish.click()
 
-	linkObj = WebDriverWait(browser, timeout=TIMEOUT).until(
-		lambda x: x.find_element_by_id('d-pollLink'))
+	linkObj = browser.find_element_by_id('d-pollLink'))
 
 	link = linkObj.get_attribute('value');
 	
@@ -195,10 +182,11 @@ def confirmPoll(browser):
 
 def newDoodlePoll(title,description,dates,times):
 
-	# use chrome to get page with javascript generated content
-#	with closing(Chrome(executable_path=CHROMEDRIVER_PATH,chrome_options=chrome_options)) as browser:
 	with closing(DRIVER(**driver_options)) as browser:
 
+		#set default timeout time to find page elements
+		driver.implicitly_wait(TIMEOUT)
+		
 		loginToDoodle(browser)
 
 		startNewPoll(browser, title, description)
@@ -222,11 +210,12 @@ def chooseTime(poll):
 	
 	with closing(DRIVER(**driver_options)) as browser:
 		
+		driver.implicitly_wait(TIMEOUT)
+		
 		browser.get(poll)
 		
 		# wait for the page to load until we find responses
-		dOptions = WebDriverWait(browser, timeout=TIMEOUT).until(
-		lambda x: x.find_elements_by_xpath("//ul[@class='d-options']/li"))
+		dOptions = browser.find_elements_by_xpath("//ul[@class='d-options']/li"))
 
 		times = list()
 		votes = list()
