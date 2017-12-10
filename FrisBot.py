@@ -142,9 +142,12 @@ def sendPollMail(poll):
 	
 	SUBJECT = "RELAY: <{title}>".format(title=poll['title'])
 	
-	greet_text = "Hello frisbee players, \n\n"
-	greet_html = "<p>Hello frisbee players, </p>"
-	
+	greet_text = "Hello frisbee players, \n\nThis is another automated message to " + \
+				"organize a game for Friday afternoon. \n\n"
+	greet_html = "<p>Hello frisbee players, </p><p>This is another automated message to " + \
+				"organize a game for Friday afternoon. </p>"
+
+
 	TEXT = "{greet}{desc}\n\nDo the poll here:\n{link}\n\nFrisBot"
 	TEXT = TEXT.format(greet=greet_text, desc=poll['description'], link=poll['link'])
 	
@@ -154,7 +157,7 @@ def sendPollMail(poll):
 		<body>
 		{greet}
 		<p>{desc}</p>
-		<p><b><font size="+1"><a href="{link}">Do the Doodle Poll</a></b></font>.</p>
+		<p><b><font size="+1"><a href="{link}">Do the Doodle Poll</a></b></font></p>
 		<p>FrisBot</p>
 		</body>
 		</html>
@@ -230,8 +233,9 @@ def makeAndSendFrisbeePoll():
 		#create a new poll
 		poll['link'] = doodle.newDoodlePoll(**poll)
 		#log poll creation
+		timestamp = time.strftime('%y-%m-%d %H:%M',time.localtime())
 		with open(logfile, 'a') as fp:
-			fp.write("{d}\t{l}\n".format(d=nextFri, l=poll['link']))
+			fp.write("{t}\t{d}\t{l}\n".format(t=timestamp, d=nextFri, l=poll['link']))
 			fp.close()
 	else:
 		poll['link'] = poll_link
@@ -239,8 +243,9 @@ def makeAndSendFrisbeePoll():
 	#send email
 	sendPollMail(poll)
 	#log the sending of the mail
+	timestamp = time.strftime('%y-%m-%d %H:%M',time.localtime())
 	with open(logfile, 'a') as fp:
-		fp.write("{d}\tpoll_mail_sent\n".format(d=nextFri))
+		fp.write("{t}\t{d}\tpoll_mail_sent\n".format(t=timestamp, d=nextFri))
 		fp.close()
 
 
@@ -322,7 +327,7 @@ def getAndSendPollResults(date):
 		elif (inside):
 			line = "Meet in the sports hall at {t}!".format(t=result['toptime'][:5])
 		else:
-			line = "The weather may be unsuitable outside, but the voted time is " + \
+			line = "The weather may now be unsuitable outside, but the voted time is " + \
 					"outside of our regular sports hall slot (13:00 - 15:00). " + \
 					"This calls for human supervision... stay tuned for an update."
 
@@ -354,23 +359,36 @@ def getAndSendPollResults(date):
 		mail['to'] = [debugMail]
 
 	email.sendMail(mail,cred.mail)
+
+	timestamp = time.strftime('%y-%m-%d %H:%M',time.localtime())
 	with open(logfile, 'a') as fp:
-		fp.write("{d}\tconf_mail_sent\n".format(d=date))
+		fp.write("{t}\t{d}\tconf_mail_sent\n".format(t=timestamp, d=date))
 		fp.close()
 
 
 if __name__ == '__main__':
 	
+	timestamp = time.strftime('%y-%m-%d %H:%M',time.localtime())
+	
 	if len(sys.argv) > 1:
 		task = sys.argv[1]
 		
 		if task == 'create':
+			#log the calling of the main function
+			with open(logfile, 'a') as fp:
+				fp.write("{t}\tlaunched create process\n".
+							format(t=timestamp))
+				fp.close()
 			makeAndSendFrisbeePoll()
 			exit()
 		elif task == 'confirm':
 			if len(sys.argv) < 3:
+				fp.write("{t}\tlaunched confirm process for date {d}\n".
+							format(t=timestamp, d=nextFri))
 				getAndSendPollResults(nextFri)
 			else:
+				fp.write("{t}\tlaunched confirm process for date {d}\n".
+							format(t=timestamp, d=sys.argv[2]))
 				getAndSendPollResults(sys.argv[2])
 			exit()
 		elif task == 'test':
