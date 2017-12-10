@@ -261,7 +261,7 @@ def makeAndSendFrisbeePoll():
 	#log the sending of the mail
 	timestamp = time.strftime('%y-%m-%d %H:%M',time.localtime())
 	with open(logfile, 'a') as fp:
-		fp.write("{t}\t{d}\tpoll_mail_sent\n".format(t=timestamp, d=nextFri))
+		fp.write("{t}\tpoll_mail_sent for date {d}\n".format(t=timestamp, d=nextFri))
 		fp.close()
 
 
@@ -379,7 +379,7 @@ def getAndSendPollResults(date):
 
 	timestamp = time.strftime('%y-%m-%d %H:%M',time.localtime())
 	with open(logfile, 'a') as fp:
-		fp.write("{t}\t{d}\tconf_mail_sent\n".format(t=timestamp, d=date))
+		fp.write("{t}\tconf_mail_sent for date {d}\n".format(t=timestamp, d=date))
 		fp.close()
 
 
