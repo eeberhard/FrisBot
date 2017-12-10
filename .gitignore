@@ -1,5 +1,5 @@
 credentials.py
 .DS_Store
 __pycache__
-FrisBotLog.txt
+#FrisBotLog.txt
 ghostdriver.log

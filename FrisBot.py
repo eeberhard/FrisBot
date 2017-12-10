@@ -299,19 +299,19 @@ def getAndSendPollResults(date):
 
 	subject = "RELAY: <Update: Frisbee Friday {d} {m}>".format(d=date_struct.tm_mday,
 													m=time.strftime('%b',date_struct))
-	text = "Hello all,\n\n"
+	text = "Hello all, \n\n"
 	html = """\
 		<html>
 		<head></head>
 		<body>
-		<p>Hello all,</p>"""
+		<p>Hello all, </p>"""
 
 	if(result['topvotes'] >= 6):
 		
 		line = "There are enough numbers for a game, with {v} votes for {t}".format(
 			v=result['topvotes'], t=result['toptime'])
-		html = html + "<p>" + line + " (<a href=\"{l}\">doodle poll</a>).</p>".format(l=poll_link)
-		text = text + line + " ({l}).\n\n".format(l=poll_link)
+		html = html + "<p>" + line + " (<a href=\"{l}\">doodle poll</a>)!</p>".format(l=poll_link)
+		text = text + line + " ({l})! \n\n".format(l=poll_link)
 
 
 		#get forecast for top time
@@ -324,9 +324,9 @@ def getAndSendPollResults(date):
 		
 		#check if toptime is within sports hall time (13:00 to 16:00)
 		gameStartNum = int(gameStart)*100 + int(result['toptime'][3:5])
-												
-		inside = (gameStartNum < 1300 or gameStartNum > 1430)
+		inside = not (gameStartNum < 1300 or gameStartNum > 1430)
 		
+		#check whether weather is suitable in the voted time
 		w = evaluateConditions(daysToDate,gameStart,gameEnd)
 		
 		avg = w['averages']
@@ -343,8 +343,9 @@ def getAndSendPollResults(date):
 		elif (inside):
 			line = "Meet in the sports hall at {t}!".format(t=result['toptime'][:5])
 		else:
+			debug = True #sends mail only to debug group, not everyone
 			line = "The weather may now be unsuitable outside, but the voted time is " + \
-					"outside of our regular sports hall slot (13:00 - 15:00). " + \
+					"not during regular sports hall slot (13:00 - 15:00). " + \
 					"This calls for human supervision... stay tuned for an update."
 
 		html = html + "<p>" + line + "</p>"
@@ -399,12 +400,16 @@ if __name__ == '__main__':
 			exit()
 		elif task == 'confirm':
 			if len(sys.argv) < 3:
-				fp.write("{t}\tlaunched confirm process for date {d}\n".
-							format(t=timestamp, d=nextFri))
+				with open(logfile, 'a') as fp:
+					fp.write("{t}\tlaunched confirm process for date {d}\n".
+							 format(t=timestamp, d=nextFri))
+					fp.close()
 				getAndSendPollResults(nextFri)
 			else:
-				fp.write("{t}\tlaunched confirm process for date {d}\n".
+				with open(logfile, 'a') as fp:
+					fp.write("{t}\tlaunched confirm process for date {d}\n".
 							format(t=timestamp, d=sys.argv[2]))
+					fp.close()
 				getAndSendPollResults(sys.argv[2])
 			exit()
 		elif task == 'test':
