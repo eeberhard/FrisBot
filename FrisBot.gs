@@ -58,7 +58,7 @@ function processMessage(message) {
 			
 		}
 		else {
-			contact = ContactsApp.createContact('', '', email)
+			contact = ContactsApp.createContact(null, null, email)
 			Logger.log("New contact: " + email)
 			console.info("New contact: " + email)
 		}
