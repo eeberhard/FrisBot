@@ -5,6 +5,7 @@ import time
 import datetime
 import numpy as np
 import collections
+import xkcd
 import doodle
 import bbcweather as bbc
 import credentials as cred
@@ -148,6 +149,15 @@ def sendPollMail(poll):
 				"organize a game for Friday afternoon. </p>"
 
 
+	comic = xkcd.random()
+	
+	greet_text = greet_text + "But first, a random xkcd comic to make me seem more " + \
+		"relatable and less like a computer program: \n\n{t}\n".format(t=xkcd.strinfo(comic))
+
+	greet_html = greet_html + "<p> But first, a random xkcd comic to make me seem more " + \
+	"relatable and less like a computer program: </p>" + \
+	"<p><img src=\"{image_url}\" alt=\"xkcd {number}\"></p>".format(**comic)
+
 	TEXT = "{greet}{desc}\n\nDo the poll here:\n{link}\n\nFrisBot"
 	TEXT = TEXT.format(greet=greet_text, desc=poll['description'], link=poll['link'])
 	
@@ -159,6 +169,12 @@ def sendPollMail(poll):
 		<p>{desc}</p>
 		<p><b><font size="+1"><a href="{link}">Do the Doodle Poll</a></b></font></p>
 		<p>FrisBot</p>
+		<p><i><font size="1">
+		Poll and email generated automatically with Python and JavaScript.
+		Please report bugs to eeberhard@rvc.ac.uk <br>
+		<a href="mailto:smlfrisbot@gmail.com?subject=unsubscribe&body=Send this to unsubscribe">
+		Unsubscribe from this list</a>
+		</font></i></p>
 		</body>
 		</html>
 		"""
