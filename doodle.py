@@ -1,3 +1,4 @@
+import re
 import time
 from sys import platform 
 import numpy as np
@@ -219,11 +220,18 @@ def chooseTime(poll):
 
 		times = list()
 		votes = list()
+		
+		#option text will be 'Dec\n8\nFRI\n13:00 – 14:30\n10' on Chrome and
+		#					 'Dec\n8\nFRI\n13:00 – 14:30\n10 votes' on PhantomJS
+		expr = re.compile("(?P<month>\w+?)\\n(?P<date>\d+?)\\n(?P<day>\w+?)\\n(?P<time>.+)\\n(?P<votes>\d+)(?: votes?)?$")
 
 		#for each time column, find the time and the votes
 		for option in dOptions:
-			times.append(option.find_element_by_class_name('d-time').text)
-			votes.append(int(option.find_element_by_class_name('d-text').text))
+			match = expr.search(option.text)
+			if match:
+				times.append(match.group('time'))
+				votes.append(int(match.group('votes')))
+
 
 	#top = votes.index(np.max(votes))	#return earliest time with max votes
 	top = len(votes) - 1 - votes[::-1].index(np.max(votes))	#return latest time with max votes
