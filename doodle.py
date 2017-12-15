@@ -10,18 +10,27 @@ import credentials as cred
 
 driver_options = {}
 
-if platform == "linux":
-	DRIVER = PhantomJS
-	#driver_options['executable_path'] = '/usr/bin'
-	TIMEOUT = 240
-else:
-	DRIVER = Chrome
-	chrome_options = ChromeOptions()
-	chrome_options.add_argument("--headless")
-	chrome_options.add_argument("--window-size=1080,720")
-	#driver_options['executable_path'] = '/usr/bin'
-	driver_options['chrome_options'] = chrome_options
-	TIMEOUT = 10
+#default driver
+DRIVER = PhantomJS
+#driver_options['executable_path'] = '/usr/bin'
+TIMEOUT = 240
+
+def setDriver(driver):
+	driver = driver.lower()
+	if driver.lower() == 'phantomjs':
+		DRIVER = PhantomJS
+		#driver_options['executable_path'] = '/usr/bin'
+		TIMEOUT = 240
+	elif driver.lower() == 'chrome':
+		DRIVER = Chrome
+		chrome_options = ChromeOptions()
+		chrome_options.add_argument("--headless")
+		chrome_options.add_argument("--window-size=1080,720")
+		#driver_options['executable_path'] = '/usr/bin'
+		driver_options['chrome_options'] = chrome_options
+		TIMEOUT = 10
+	else:
+		return -1
 
 def loginToDoodle(browser):
 	
@@ -223,15 +232,15 @@ def chooseTime(poll):
 		
 		#option text will be 'Dec\n8\nFRI\n13:00 – 14:30\n10' on Chrome and
 		#					 'Dec\n8\nFRI\n13:00 – 14:30\n10 votes' on PhantomJS
-		expr = re.compile("(?P<month>\w+?)\\n(?P<date>\d+?)\\n(?P<day>\w+?)\\n(?P<time>.+)\\n(?P<votes>\d+)(?: votes?)?$")
+		expr = re.compile("(?P<month>\w+?)\s+(?P<date>\d+?)\s+(?P<day>\w+?)\s+(?P<time>\d{2}:\d{2}[.\n]+\d{2}:\d{2})\s+(?P<votes>\d+)(?: votes?)?")
 
 		#for each time column, find the time and the votes
 		for option in dOptions:
 			match = expr.search(option.text)
 			if match:
-				times.append(match.group('time'))
+				time = match.group('time')
+				times.append(time.replace('\n', ' - '))
 				votes.append(int(match.group('votes')))
-
 
 	#top = votes.index(np.max(votes))	#return earliest time with max votes
 	top = len(votes) - 1 - votes[::-1].index(np.max(votes))	#return latest time with max votes
