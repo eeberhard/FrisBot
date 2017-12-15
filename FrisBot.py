@@ -169,11 +169,13 @@ def sendPollMail(poll):
 		<p>{desc}</p>
 		<p><b><font size="+1"><a href="{link}">Do the Doodle Poll</a></b></font></p>
 		<p>FrisBot</p>
+		<br><br>
 		<p><i><font size="1">
-		Poll and email generated automatically with Python and JavaScript.
-		Please report bugs to eeberhard@rvc.ac.uk <br>
+		Poll and email generated automatically with Python and JavaScript
+		(<a href="https://github.com/eeberhard/FrisBot">source code</a>). <br>
+		Please reports bugs or feature requests to eeberhard@rvc.ac.uk <br>
 		<a href="mailto:smlfrisbot@gmail.com?subject=unsubscribe&body=Send this to unsubscribe">
-		Unsubscribe from this list</a>
+		Click here to unsubscribe from this list</a>
 		</font></i></p>
 		</body>
 		</html>
@@ -306,6 +308,7 @@ def getAndSendPollResults(date):
 		<body>
 		<p>Hello all, </p>"""
 
+
 	if(result['topvotes'] >= 6):
 		
 		line = "There are enough numbers for a game, with {v} votes for {t}".format(
@@ -371,7 +374,7 @@ def getAndSendPollResults(date):
 		'text':text,
 		'html':html
 	}
-	
+
 	if debug:
 		mail['to'] = [debugMail]
 
