@@ -17,7 +17,6 @@ import simplemail as email
 # 3) email out nicely formatted message with forecast and link to poll
 # 4) save a file with datestamp so there's only one poll/email per week
 
-
 #some constants
 logfile = "FrisBotLog.txt"
 
@@ -154,11 +153,11 @@ def sendPollMail(poll):
 	greet_text = greet_text + "But first, a random xkcd comic to make me seem more " + \
 		"relatable and less like a computer program: \n\n{t}\n".format(t=xkcd.strinfo(comic))
 
-	greet_html = greet_html + "<p> But first, a random xkcd comic to make me seem more " + \
+	greet_html = greet_html + "<p>But first, a random xkcd comic to make me seem more " + \
 	"relatable and less like a computer program: </p>" + \
 	"<p><img src=\"{image_url}\" alt=\"xkcd {number}\"></p>".format(**comic)
 
-	TEXT = "{greet}{desc}\n\nDo the poll here:\n{link}\n\nFrisBot"
+	TEXT = "{greet}{desc}\n\nDo the poll here:\n{link}\nUSER_MESSAGE\nFrisBot"
 	TEXT = TEXT.format(greet=greet_text, desc=poll['description'], link=poll['link'])
 	
 	HTML = """\
@@ -168,6 +167,7 @@ def sendPollMail(poll):
 		{greet}
 		<p>{desc}</p>
 		<p><b><font size="+1"><a href="{link}">Do the Doodle Poll</a></b></font></p>
+		USER_MESSAGE
 		<p>FrisBot</p>
 		<br><br>
 		<p><i><font size="1">
@@ -269,6 +269,8 @@ def makeAndSendFrisbeePoll():
 
 
 def getAndSendPollResults(date):
+	
+	debug = False
 
 	#get the log line matching the date
 	#check if this script has run already this week
@@ -356,14 +358,14 @@ def getAndSendPollResults(date):
 
 	
 	else:
-		line = "There are not enough numbers for a full game, with only {v} vote{s} for {t}".format(
+		line = "Unfortunately there are not currently enough responses on the poll for a full game, with only {v} vote{s} for {t}".format(
 				v=result['topvotes'], t=result['toptime'], s=('' if result['topvotes']==1 else 's'))
 		html = html + "<p>" + line + " (<a href=\"{l}\">doodle poll</a>).</p>".format(l=poll_link)
 		text = text + line + " ({l}).\n\n".format(l=poll_link)
 
 
-	html = html + "<p>FrisBot</p></body></html>"
-	text = text + "FrisBot"
+	html = html + "USER_MESSAGE<p>FrisBot</p></body></html>"
+	text = text + "USER_MESSAGE\nFrisBot"
 
 	print("Sending following email:\n\n")
 	print(text)
@@ -388,6 +390,8 @@ def getAndSendPollResults(date):
 
 if __name__ == '__main__':
 	
+	debug = False
+	
 	timestamp = time.strftime('%y-%m-%d %H:%M',time.localtime())
 	
 	if len(sys.argv) > 1:
@@ -395,24 +399,26 @@ if __name__ == '__main__':
 		
 		if task == 'create':
 			#log the calling of the main function
-			with open(logfile, 'a') as fp:
-				fp.write("{t}\tlaunched create process\n".
-							format(t=timestamp))
-				fp.close()
+			#with open(logfile, 'a') as fp:
+			#	fp.write("{t}\tlaunched create process\n".
+			#				format(t=timestamp))
+			#	fp.close()
+			
 			makeAndSendFrisbeePoll()
 			exit()
 		elif task == 'confirm':
 			if len(sys.argv) < 3:
-				with open(logfile, 'a') as fp:
-					fp.write("{t}\tlaunched confirm process for date {d}\n".
-							 format(t=timestamp, d=nextFri))
-					fp.close()
+				#with open(logfile, 'a') as fp:
+				#	fp.write("{t}\tlaunched confirm process for date {d}\n".
+				#			 format(t=timestamp, d=nextFri))
+				#	fp.close()
+				
 				getAndSendPollResults(nextFri)
 			else:
-				with open(logfile, 'a') as fp:
-					fp.write("{t}\tlaunched confirm process for date {d}\n".
-							format(t=timestamp, d=sys.argv[2]))
-					fp.close()
+				#with open(logfile, 'a') as fp:
+				#	fp.write("{t}\tlaunched confirm process for date {d}\n".
+				#			format(t=timestamp, d=sys.argv[2]))
+				#	fp.close()
 				getAndSendPollResults(sys.argv[2])
 			exit()
 		elif task == 'test':

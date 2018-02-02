@@ -1,4 +1,15 @@
 2017-12-08	https://doodle.com/poll/5kv5qbcbpzciknz3
 2017-12-08	poll_mail_sent
-17-12-08 10:57	launched confirm process for date 2017-12-08
 17-12-08 10:57	conf_mail_sent for date 2017-12-08
+17-12-14 09:08	2017-12-15	https://doodle.com/poll/dy8u4vafvqufbyvp
+17-12-14 09:08	poll_mail_sent for date 2017-12-15
+17-12-15 13:24	conf_mail_sent for date 2017-12-15
+18-01-17 17:57	2018-01-19	https://doodle.com/poll/eh7nrkatppfdtqmz
+18-01-17 17:57	poll_mail_sent for date 2018-01-19
+18-01-19 10:47	conf_mail_sent for date 2018-01-19
+18-01-25 09:28	2018-01-26	https://doodle.com/poll/93pf2q9itag9wxk2
+18-01-25 09:28	poll_mail_sent for date 2018-01-26
+18-01-26 10:00	conf_mail_sent for date 2018-01-26
+18-02-01 09:27	2018-02-02	https://doodle.com/poll/xcw2k2h9egpcszen
+18-02-01 09:27	poll_mail_sent for date 2018-02-02
+18-02-02 10:53	conf_mail_sent for date 2018-02-02

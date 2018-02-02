@@ -8,6 +8,7 @@ url = 'http://xkcd.com'
 r_url = 'http://c.xkcd.com/random/comic/';
 link_re = re.compile("Permanent link to this comic: (http.+?/(\d+?)/)")
 img_re = re.compile("Image URL \(for hotlinking/embedding\): (http.*?png)")
+img_re = re.compile("Image URL \(for hotlinking/embedding\): (http.*?\.(?:(?:png)|(?:gif)))")
 alt_re = re.compile("{{.lt.*?: (.*?)}}")
 title_re = re.compile("{{.itle.*?: (.*?)}}")
 sub_re = re.compile("{{.ubheading.*?: (.*?)}}")
