@@ -99,12 +99,10 @@ function createPoll(debug) {
 function sendPollMail(poll, summary) {
   
   var subject = poll.getTitle();
-  var src_link = "https://script.google.com/d/1NwqX1-lQbl566AKRK-s34hTAxoVjHvUEwasuP6Aauv9k_WPqq-HZ2BaH/edit?usp=sharing";
-  //var src_link = "https://github.com/eeberhard/FrisBot"
+  //var src_link = "https://script.google.com/d/1NwqX1-lQbl566AKRK-s34hTAxoVjHvUEwasuP6Aauv9k_WPqq-HZ2BaH/edit?usp=sharing";
+  var src_link = "https://github.com/eeberhard/FrisBot"
   
   var joke = randomDadJoke();
-  //var comic = randomXKCD();
-  //var comic = specificXKCD(1998);
   var comic = newestXKCD();
   
   var text = "Hello Frisbee Fan, \n\nThis is another automated message to " + 
@@ -131,8 +129,8 @@ function sendPollMail(poll, summary) {
             "<p><i><font size=\"1\">" +
             "Poll and email generated automatically with JavaScript " +
             "(<a href=\"" + src_link + "\">source code</a>). <br>" +
-            "FrisBot mail is routed through eeberhard@rvc.ac.uk to avoid the RVC quarantine. <br>" +
-            "Please reports bugs or feature requests to eeberhard@rvc.ac.uk <br>" +
+            "FrisBot mail is routed through " + getAdmin() + " to avoid the RVC quarantine. <br>" +
+            "Please reports bugs or feature requests to " + getAdmin() + "<br>" +
             "<a href=\"mailto:smlfrisbot@gmail.com?subject=subscribe&body=Send this to subscribe\">" +
             "Click here to subscribe to these updates</a><br>" +
             "<a href=\"mailto:smlfrisbot@gmail.com?subject=unsubscribe&body=Send this to unsubscribe\">" +
@@ -152,8 +150,8 @@ function sendConfMail() {
   //get more up-to-date weather
   var summary = outdoorLogic(getWeather(), 'Friday');
   
-  var src_link = "https://script.google.com/d/1NwqX1-lQbl566AKRK-s34hTAxoVjHvUEwasuP6Aauv9k_WPqq-HZ2BaH/edit?usp=sharing";
-  //var src_link = "https://github.com/eeberhard/FrisBot"
+  //var src_link = "https://script.google.com/d/1NwqX1-lQbl566AKRK-s34hTAxoVjHvUEwasuP6Aauv9k_WPqq-HZ2BaH/edit?usp=sharing";
+  var src_link = "https://github.com/eeberhard/FrisBot"
   
   var poll = openPoll();
   
@@ -234,8 +232,8 @@ function sendConfMail() {
             "<p><i><font size=\"1\">" +
             "Poll and email generated automatically with JavaScript " +
             "(<a href=\"" + src_link + "\">source code</a>). <br>" +
-            "FrisBot mail is routed through eeberhard@rvc.ac.uk to avoid the RVC quarantine. <br>" +
-            "Please reports bugs or feature requests to eeberhard@rvc.ac.uk <br>" +
+            "FrisBot mail is routed through " + getAdmin() + " to avoid the RVC quarantine. <br>" +
+            "Please reports bugs or feature requests to " + getAdmin() + " <br>" +
             "<a href=\"mailto:smlfrisbot@gmail.com?subject=subscribe&body=Send this to subscribe\">" +
             "Click here to subscribe to these updates</a><br>" +
             "<a href=\"mailto:smlfrisbot@gmail.com?subject=unsubscribe&body=Send this to unsubscribe\">" +
@@ -248,6 +246,11 @@ function sendConfMail() {
     
 }
 
+
+function getAdmin() {
+  var scriptProperties = PropertiesService.getScriptProperties();
+  return scriptProperties.getProperty('administrator');
+}
 
 
 function testweather() {
@@ -312,7 +315,7 @@ function executeWithTries(functionHandle, functionName, maxTries, callingName) {
     }
     else { //if it tried and failed 3 times, stop trying and notify dev
       
-      GmailApp.sendEmail('enrico.eberhard@gmail.com',
+      GmailApp.sendEmail(getAdmin(),
                          "FrisBot execution error",
                          "Function " + functionName + " failed after " + tries +
                          " tries, with error: " + err)

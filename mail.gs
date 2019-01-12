@@ -300,7 +300,7 @@ function sendSubscriberList(to) {
   var recipients = getSubscriberList();
   
   var options = {
-      from: 'eeberhard@rvc.ac.uk',
+      from: getAdmin(),
       replyTo: 'smlfrisbot@rvc.ac.uk',
       name: 'FrisBot'
     };
@@ -334,13 +334,12 @@ function sendMailToSubscribers(subject, text, html) {
   
   
   var recipients = getSubscriberList();
-  //var recipients = 'enrico.eberhard@gmail.com'
   
   
   var options = {
       htmlBody: html,
       bcc: recipients,
-      from: 'eeberhard@rvc.ac.uk',
+      from: getAdmin(),
       replyTo: 'smlfrisbot@rvc.ac.uk',
       name: 'FrisBot'
     };
