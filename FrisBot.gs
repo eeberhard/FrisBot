@@ -40,7 +40,7 @@ function doGet(e) {
 //version of createPoll with repeated attempts if weather API / poll creation fails
 function weeklyCreatePoll() {
   
-  executeWithTries(createPoll, 'createPoll', 3, 'weeklyCreatePoll');
+  executeWithTries(createPoll, 'createPoll', 4, 'weeklyCreatePoll');
   
   
   //create new trigger for next week, 9:30  
@@ -57,7 +57,7 @@ function weeklyCreatePoll() {
 
 function weeklyConfirmPoll() {
   
-  executeWithTries(sendConfMail, 'sendConfMail', 3, 'weeklyConfirmPoll');
+  executeWithTries(sendConfMail, 'sendConfMail', 4, 'weeklyConfirmPoll');
   
   //create new trigger for next week, 11:00
   var nextTime = new Date();
@@ -79,10 +79,16 @@ function createPoll(debug) {
   
   console.info("Creating new poll");
   
-  var summary = outdoorLogic(getWeather(), 'Friday');
+  var summary;
+  try {
+    summary = outdoorLogic(getWeather(1,15));
+  }
+  catch(err){
+    console.info("outdoorLogic failed with error " + err + " - retrying with noWeatherLogic.");
+    summary = noWeatherLogic()
+  }
   
-  var title = "Frisbee Friday " + summary.weather.simpleday.date.day + 
-          " " + summary.weather.simpleday.date.monthname;
+  var title = "Frisbee Friday " + summary.weather.day;
   
   var poll = makeNewPoll(title, summary)
   
@@ -113,6 +119,12 @@ function sendPollMail(poll, summary) {
              "\nUSER_MESSAGE" +
              "\nFrisBot"  
              
+             
+  var icon_insert = "";
+  if (summary.icon != null) {
+    icon_insert = "<p><img src=\"" + summary.icon.url + "\" alt=\"" + summary.icon.text + "\"></p>"
+  }
+             
   var html ="<html>" +
             "<head></head>" +
             "<body>" +
@@ -121,7 +133,7 @@ function sendPollMail(poll, summary) {
             "organize a game for Friday afternoon. The weather report right after today's xkcd comic: </p>" + 
             "<p><img src=\"" + comic.image + "\" alt=\"" + comic.number + "\"></p>" +
             "<p>" + poll.getDescription() + "</p>" +
-            "<p><img src=\"" + summary.icon.url + "\" alt=\"" + summary.icon.text + "\"></p>" +
+            icon_insert + 
             "<p><b><font size=\"+2\"><a href=\"" + poll.getPublishedUrl() + "\">Vote for a time!</a></font></b></p>" +
             "USER_MESSAGE" +
             "<p>FrisBot</p>" +
@@ -147,8 +159,17 @@ function sendPollMail(poll, summary) {
 
 function sendConfMail() {
   
+  console.info("Confirming weekly poll");
+  
   //get more up-to-date weather
-  var summary = outdoorLogic(getWeather(), 'Friday');
+  var summary;
+  try {
+    summary = outdoorLogic(getWeather(1,15));
+  }
+  catch(err){
+    console.info("outdoorLogic failed with error " + err + " - retrying with noWeatherLogic.")
+    summary = noWeatherLogic()
+  }
   
   //var src_link = "https://script.google.com/d/1NwqX1-lQbl566AKRK-s34hTAxoVjHvUEwasuP6Aauv9k_WPqq-HZ2BaH/edit?usp=sharing";
   var src_link = "https://github.com/eeberhard/FrisBot"
@@ -158,6 +179,11 @@ function sendConfMail() {
   var results = checkResults(poll.getTitle());
   
   var result_text, result_html;
+  
+  var icon_insert = "";
+  if (summary.icon != null) {
+    icon_insert = "<p><img src=\"" + summary.icon.url + "\" alt=\"" + summary.icon.text + "\"></p>"
+  }
   
   if(results.votes >= 6) {
     
@@ -172,11 +198,14 @@ function sendConfMail() {
     
     result_text += "\n\nThe updated forecast for today is: " + summary.text;
     
-    result_html += "<p>The updated forecast for today is: " + summary.text + " </p>" +
-                   "<p><img src=\"" + summary.icon.url + "\" alt=\"" + summary.icon.text + "\"></p>";
+    result_html += "<p>The updated forecast for today is: " + summary.text + " </p>" + icon_insert;
     
     
-    if(summary.outside) {
+    if (summary.outside == null) {
+      result_text += "\n\nMeet at " + results.time.slice(0,5) + "!";
+      result_html += "<p><b><font size=\"+1\">Meet at " + results.time.slice(0,5) + "!</font></b></p>"
+    }
+    else if(summary.outside) {
       result_text += "\n\nMeet out on the sports field at " + results.time.slice(0,5) + "!";
       result_html += "<p><b><font size=\"+1\">Meet on the sports field at " + results.time.slice(0,5) + "!</font></b></p>"
     }
@@ -300,7 +329,10 @@ function executeWithTries(functionHandle, functionName, maxTries, callingName) {
   
   try {
     
-    functionHandle();
+    if ((tries >= maxTries) && ((functionName === 'createPoll') || (functionName === 'confirmPoll')))
+      functionHandle(true)
+    else
+      functionHandle()
     
   } catch(err) {
     
@@ -308,12 +340,12 @@ function executeWithTries(functionHandle, functionName, maxTries, callingName) {
       //something went wrong - before aborting,
       //trigger this function to try again in 5 minutes
       var retry = new Date();
-      retry.setTime(retry.getTime + 1*60000);
+      retry.setTime(retry.getTime + 5*60000);
       ScriptApp.newTrigger(callingName).timeBased().at(retry).create();
       
       scriptProperties.setProperty('execution_tries', tries + 1);
     }
-    else { //if it tried and failed 3 times, stop trying and notify dev
+    else { //if it tried and failed too many times, stop trying and notify dev
       
       GmailApp.sendEmail(getAdmin(),
                          "FrisBot execution error",

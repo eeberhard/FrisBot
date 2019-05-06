@@ -11,20 +11,18 @@ function makeNewPoll(title, summary) {
   }
  
   
-  var description = 'Weather forecast for ' + summary.day + ': ' + summary.text;
+  var description = summary.text + "\nTo view current responses, go to bit.do/FrisBotStatus";
   var times = summary.times;
-    
   
   poll = FormApp.create(title);
   
   poll.setTitle(title);
-  poll.setDescription(description + "\nTo view current responses, go to bit.do/FrisBotStatus")
+  poll.setDescription(description)
   
-  
-  var imageItem = poll.addImageItem();
-  
-  imageItem.setImage(UrlFetchApp.fetch(summary.icon.url));
-  
+  if (summary.icon != null) {
+    var imageItem = poll.addImageItem();
+    imageItem.setImage(UrlFetchApp.fetch(summary.icon.url));
+  }
   
   var nameItem = poll.addTextItem();
   
